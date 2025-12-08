@@ -1,0 +1,26 @@
+---
+title: "Assignment 1 - A Sample Rmarkdown Document"
+author: "Andrew Johnson"
+date: "2025-12-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This is my assignment 1 intro
+
+###
+
+This is my assignment 1 subheading
+
+- item 1
+- item 2
+- item 3
+
+*sample italic text*
+
+**sample bold text**
