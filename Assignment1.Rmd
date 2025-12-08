@@ -24,3 +24,10 @@ This is my assignment 1 subheading
 *sample italic text*
 
 **sample bold text**
+
+First Header  | Second Header
+------------- | -------------
+Content Cell  | Content Cell
+Content Cell  | Content Cell
+
+~~strikethrough~~
