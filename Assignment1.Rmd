@@ -1,7 +1,6 @@
 ---
 title: "Assignment 1 - A Sample Rmarkdown Document"
 author: "Andrew Johnson"
-date: "2025-12-08"
 output: html_document
 ---
 
