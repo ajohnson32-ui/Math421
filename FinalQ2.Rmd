@@ -1,0 +1,170 @@
+---
+title: "Adult Census Income"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    logo: logo.png
+    source_code: embed
+    social: menu
+---
+```{r}
+library(flexdashboard)
+library(tidyverse)
+library(plotly)
+library(knitr)
+library(DT)
+
+df <- read.table(
+  "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data",
+  sep = ",",
+  stringsAsFactors = FALSE
+)
+
+colnames(df) <- c(
+  "age","workclass","fnlwgt","education","education_num",
+  "marital_status","occupation","relationship","race","sex",
+  "capital_gain","capital_loss","hours_per_week","native_country","income"
+)
+
+df <- df %>% mutate(across(where(is.character), str_trim))
+
+
+# Create ggplot objects
+
+p <- df %>%
+  count(sex, income) %>%
+  group_by(sex) %>%
+  mutate(prop = n / sum(n)) %>%
+  plot_ly(aes(x = sex, y = prop, fill = income)) +
+  geom_col() +
+  labs(y = "Proportion", fill = "Income") +
+  theme_minimal()
+
+p1 <- df %>%
+  plot_ly(aes(x = age, fill = income)) +
+  geom_density(alpha = 0.5) +
+  theme_minimal()
+
+```
+
+{.sidebar}
+
+=======================================================================
+
+### 1. Adult Census Income
+
+The Adult Census Income dataset is commonly used to predict whether an individual earns more than $50K per year based on demographic and employment-related variables.
+
+### 2. Flexdashboard and Plotly
+
+This interactive dashboard uses flexdashboard and plotly to visualize income patterns across different demographic groups.
+
+Main Tab 1
+
+=======================================================================
+
+Column {data-width=500, .tabset}
+
+-----------------------------------------------------------------------
+
+### Column Tab 1
+
+```{r}
+df
+```
+
+### Column Tab 2
+
+```{r}
+kable(df)
+```
+
+### Column Tab 3
+
+```{r}
+datatable(
+df,
+options = list(pageLength = 25)
+)
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Row 1
+
+```{r}
+p
+```
+
+### Row 2
+
+```{r}
+plot_ly(
+  df,
+  x = ~sex,
+  color = ~income,
+  type = "bar",
+  histnorm = "probability"
+)
+```
+
+Main Tab 2
+=======================================================================
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+#### 1. Plotly for R
+
+Plotly is an R package for creating interactive web-based graphs.
+The ggplotly() function converts a ggplot object into an interactive Plotly visualization.
+
+#### 2. Customizing the Layout
+
+Because ggplotly() returns a Plotly object, it can be further customized using Plotly layout and interaction settings.
+
+#### 3. Example
+
+```{r}
+library(plotly)
+df_example <- data.frame(
+x = c(1, 2, 3, 4),
+y = c(2, 4, 3, 5),
+group = c("A", "A", "B", "B")
+)
+
+p_example <- plot_ly(df_example, aes(x = x, y = y, color = group)) +
+geom_point()
+
+plot_ly(
+  df_example,
+  x = ~x,
+  y = ~y,
+  color = ~group,
+  type = "scatter",
+  mode = "markers"
+)
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Row 1
+
+```{r}
+p1
+```
+
+### Row 2
+
+```{r}
+plot_ly(
+  data = df,
+  x = ~age,
+  color = ~income,
+  type = "histogram",
+  histnorm = "probability density"
+)
+```
