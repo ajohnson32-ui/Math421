@@ -1,0 +1,328 @@
+
+---
+output: 
+  html_document:
+  pdf_document: default
+  word_document: default
+title: "Assignment 14 - Optional: Writing a function - Loop"
+---
+
+***How to do it?***: 
+
+- Open the Rmarkdown file of this assignment ([link](assignment14_optional.Rmd)) in Rstudio. 
+
+- Right under each **question**, insert  a code chunk (you can use the hotkey `Ctrl + Alt + I` to add a code chunk) and code the solution for the question. 
+
+- `Knit` the rmarkdown file (hotkey: `Ctrl + Alt + K`) to export an html.  
+
+-  Publish the html file to your Githiub Page. 
+
+***Submission***: Submit the link on Github of the assignment to Canvas
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+-------
+
+1. Write the following function. Give examples to test your function.
+
+- Input: a data frame
+
+- Output: a data frame with all the missing of numeric variables replaced by the associated means.
+
+Hint: [Similar function](https://bryantstats.github.io/math421/gganimate/18_writing_functions.html#28)
+```{r}
+numeric_mean_impute <- function(d) {
+  for (i in 1:length(d)) {
+    if (is.numeric(d[[i]])) {
+      
+      mean_val <- mean(d[[i]], na.rm = TRUE)
+      d[[i]][is.na(d[[i]])] <- mean_val
+      
+    }
+  }
+  return(d)
+}
+
+df <- data.frame(
+  age = c(20, 25, NA, 30),
+  income = c(50000, NA, 60000, 55000),
+  gender = c("M", "F", "F", "M")
+)
+
+numeric_mean_impute(df)
+
+df2 <- data.frame(
+  x = c(1, 2, 3),
+  y = c(4, 5, 6)
+)
+
+numeric_mean_impute(df2)
+
+df3 <- data.frame(
+  a = c(NA, NA, NA),
+  b = c(1, 2, NA)
+)
+
+numeric_mean_impute(df3)
+```
+
+-------
+
+2. Write the following function. Give examples to test your function.
+
+- Input: a data frame
+
+- Output: a data frame with all the missing of variables replaced by the associated means (for numeric variables) or modes (for non-numeric variables).
+
+Hint: Use If-statement to combine the function in Problem 1 and the function in [this example](https://bryantstats.github.io/math421/gganimate/18_writing_functions.html#28)
+
+```{r}
+mode_impute <- function(x) {
+  ux <- na.omit(x)
+  ux[which.max(tabulate(match(ux, ux)))]
+}
+mean_mode_impute <- function(d) {
+  for (i in 1:length(d)) {
+    if (is.numeric(d[[i]])) {
+      mean_val <- mean(d[[i]], na.rm = TRUE)
+      d[[i]][is.na(d[[i]])] <- mean_val
+      
+    } else {
+      mode_val <- mode_impute(d[[i]])
+      d[[i]][is.na(d[[i]])] <- mode_val
+    }
+  }
+  return(d)
+}
+
+df <- data.frame(
+  age = c(20, 25, NA, 30),
+  income = c(50000, NA, 60000, 55000),
+  gender = c("M", "F", NA, "M"),
+  stringsAsFactors = FALSE
+)
+
+mean_mode_impute(df)
+
+df2 <- data.frame(
+  x = c(1, 2, NA, 4),
+  y = c(NA, 5, 6, 7)
+)
+
+mean_mode_impute(df2)
+
+df3 <- data.frame(
+  color = c("red", "blue", NA, "red"),
+  type = c("A", NA, "A", "B"),
+  stringsAsFactors = FALSE
+)
+
+mean_mode_impute(df3)
+```
+
+-------
+
+3. Write the following function. Give examples to test your function.
+
+- Input: a data frame
+
+- Output: Bar plots of all non-numeric variables
+
+Hint: [Similar function](https://bryantstats.github.io/math421/gganimate/18_writing_functions.html#33)
+
+```{r}
+barplot_non_numeric <- function(d) {
+  
+  for (i in 1:length(d)) {
+    if (!is.numeric(d[[i]])) {
+      
+      barplot(
+        table(d[[i]]),
+        main = paste("Bar Plot of", names(d)[i]),
+        xlab = names(d)[i],
+        ylab = "Frequency",
+        col = "lightblue"
+      )
+    }
+  }
+}
+
+df <- data.frame(
+  age = c(20, 25, 30, 40),
+  gender = c("M", "F", "F", "M"),
+  status = c("Single", "Married", "Single", "Single"),
+  income = c(50000, 60000, 55000, 65000),
+  stringsAsFactors = FALSE
+)
+
+barplot_non_numeric(df)
+```
+
+-------
+
+4. Write the following function. Give examples to test your function.
+
+- Input: a data frame
+
+- Output: all possible the bar plots of a non-numeric variable filled by a non-numeric variable.
+
+Hint: [Similar function](https://bryantstats.github.io/math421/gganimate/18_writing_functions.html#40)
+```{r}
+filled_barplot_non_numeric <- function(d) {
+  non_num_cols <- names(d)[!sapply(d, is.numeric)]
+  for (i in 1:length(non_num_cols)) {
+    for (j in 1:length(non_num_cols)) {
+      
+      if (i != j) {
+        print(
+          ggplot(d, aes(x = .data[[non_num_cols[i]]],
+                        fill = .data[[non_num_cols[j]]])) +
+            geom_bar(position = "fill") +
+            labs(
+              title = paste(non_num_cols[i], "filled by", non_num_cols[j]),
+              x = non_num_cols[i],
+              y = "Proportion",
+              fill = non_num_cols[j]
+            ) +
+            theme_minimal()
+        )
+      }
+    }
+  }
+}
+
+library(ggplot2)
+
+df <- data.frame(
+  gender = c("M", "F", "F", "M", "M"),
+  status = c("Single", "Married", "Single", "Single", "Married"),
+  region = c("East", "West", "East", "West", "East"),
+  age = c(22, 35, 28, 40, 30),
+  stringsAsFactors = FALSE
+)
+
+filled_barplot_non_numeric(df)
+
+df2 <- data.frame(
+  color = c("Red", "Blue", "Red", "Green"),
+  size = c("S", "M", "M", "L"),
+  type = c("A", "B", "A", "B"),
+  stringsAsFactors = FALSE
+)
+
+filled_barplot_non_numeric(df2)
+
+```
+
+-------
+
+5. Write the following function. Give examples to test your function.
+
+- Input: a data frame
+
+- Output: 
+
+  - all possible the bar plots of a non-numeric variable filled by a non-numeric variable.
+  
+  - all possible the density plots of a numeric variable colored by a non-numeric variable
+  
+  - all possible the scatter plots.
+
+
+Hint: Combine [this function](https://bryantstats.github.io/math421/gganimate/18_writing_functions.html#37), [this function](https://bryantstats.github.io/math421/gganimate/18_writing_functions.html#40), and the function in Question 4. One way to combine is creating a new function, `quick_plot`, and call these three functions within `quick_plot`. 
+
+```{r}
+all_possible_plots <- function(d) {
+  
+  library(ggplot2)
+  
+  num_vars <- names(d)[sapply(d, is.numeric)]
+  non_num_vars <- names(d)[!sapply(d, is.numeric)]
+  if (length(non_num_vars) >= 2) {
+    for (i in 1:length(non_num_vars)) {
+      for (j in 1:length(non_num_vars)) {
+        if (i != j) {
+          print(
+            ggplot(d, aes(x = .data[[non_num_vars[i]]],
+                          fill = .data[[non_num_vars[j]]])) +
+              geom_bar(position = "fill") +
+              labs(
+                title = paste(non_num_vars[i], "filled by", non_num_vars[j]),
+                x = non_num_vars[i],
+                y = "Proportion",
+                fill = non_num_vars[j]
+              ) +
+              theme_minimal()
+          )
+        }
+      }
+    }
+  }
+  
+  if (length(num_vars) >= 1 && length(non_num_vars) >= 1) {
+    for (i in num_vars) {
+      for (j in non_num_vars) {
+        print(
+          ggplot(d, aes(x = .data[[i]],
+                        color = .data[[j]])) +
+            geom_density() +
+            labs(
+              title = paste("Density of", i, "by", j),
+              x = i,
+              color = j
+            ) +
+            theme_minimal()
+        )
+      }
+    }
+  }
+  
+  if (length(num_vars) >= 2) {
+    for (i in 1:(length(num_vars) - 1)) {
+      for (j in (i + 1):length(num_vars)) {
+        print(
+          ggplot(d, aes(x = .data[[num_vars[i]]],
+                        y = .data[[num_vars[j]]])) +
+            geom_point() +
+            labs(
+              title = paste(num_vars[i], "vs", num_vars[j]),
+              x = num_vars[i],
+              y = num_vars[j]
+            ) +
+            theme_minimal()
+        )
+      }
+    }
+  }
+}
+
+df <- data.frame(
+  age = c(22, 35, 28, 40, 30),
+  income = c(50000, 60000, 55000, 65000, 62000),
+  gender = c("M", "F", "F", "M", "M"),
+  status = c("Single", "Married", "Single", "Single", "Married"),
+  stringsAsFactors = FALSE
+)
+
+all_possible_plots(df)
+
+df2 <- data.frame(
+  color = c("Red", "Blue", "Red", "Green"),
+  size = c("S", "M", "M", "L"),
+  type = c("A", "B", "A", "B"),
+  stringsAsFactors = FALSE
+)
+
+all_possible_plots(df2)
+
+df3 <- data.frame(
+  x = c(1, 2, 3, 4),
+  y = c(4, 3, 2, 1),
+  z = c(10, 20, 30, 40)
+)
+
+all_possible_plots(df3)
+```
+
