@@ -1,0 +1,84 @@
+---
+title: "MTCars - SelectInput"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    source_code: embed
+    social: menu
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+# load data in 'global' chunk so it can be shared by all users of the dashboard
+library(flexdashboard)
+library(tidyverse)
+library(plotly)
+library(DT)
+df <- mtcars %>%
+rownames_to_column("car") %>%
+mutate(
+cyl = factor(cyl),
+gear = factor(gear)
+)
+
+cyl_choices <- levels(df$cyl)
+```
+
+{.sidebar}
+=======================================================================
+
+The mtcars dataset contains fuel consumption and design details for 32 automobiles.
+
+Use the selector below to filter the plots by number of cylinders.
+
+```{r}
+selectInput(
+inputId = "cyl_input",
+label = h3("Select Number of Cylinders"),
+choices = cyl_choices,
+selected = cyl_choices[1]
+)
+```
+
+Main Tab 1
+=======================================================================
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### MPG Density Plot
+
+```{r}
+renderPlotly({
+  d <- df %>% filter(cyl == input$cyl_input)
+  req(nrow(d) > 0)
+
+  plot_ly(
+    data = d,
+    x = ~mpg,
+    type = "histogram",
+    nbinsx = 10
+  ) %>%
+    layout(
+      title = "Histogram of MPG",
+      xaxis = list(title = "Miles per Gallon"),
+      yaxis = list(title = "Count")
+    )
+})
+
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+
+### Searchable Data Table
+
+```{r}
+renderDT({
+df %>%
+filter(cyl == input$cyl_input)
+}, options = list(pageLength = 8))
+```
+
