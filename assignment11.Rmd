@@ -1,0 +1,128 @@
+
+---
+output: 
+  html_document:
+  pdf_document: default
+  word_document: default
+title: "Assignment 11: Predictive Modeling - Universal Framework"
+---
+
+***How to do it?***: 
+
+- Open the Rmarkdown file of this assignment ([link](assignment11.Rmd)) in Rstudio. 
+
+- Right under each **question**, insert  a code chunk (you can use the hotkey `Ctrl + Alt + I` to add a code chunk) and code the solution for the question. 
+
+- `Knit` the rmarkdown file (hotkey: `Ctrl + Alt + K`) to export an html.  
+
+-  Publish the html file to your Githiub Page. 
+
+***Submission***: Submit the link on Github of the assignment to Blackboard.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+
+-------
+
+1. Install the package mlbench and use the follows to import the data
+
+```{r}
+install.packages("mlbench")
+library(mlbench)
+library(tidyverse)
+data(PimaIndiansDiabetes)
+df <- tibble(PimaIndiansDiabetes)
+```
+
+Train and Test a decision tree and a random forest with caret. Plot the variable importance of these models. 
+```{r}
+library(mlbench)
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+data("PimaIndiansDiabetes")
+df <- PimaIndiansDiabetes
+set.seed(123)
+index <- createDataPartition(df$diabetes, p = 0.8, list = FALSE)
+train <- df[index, ]
+test  <- df[-index, ]
+set.seed(123)
+model_tree <- train(
+  diabetes ~ ., 
+  data = train,
+  method = "rpart",
+  trControl = trainControl(method = "cv", number = 5)
+)
+print(model_tree)
+rpart.plot(model_tree$finalModel, main = "Decision Tree")
+set.seed(123)
+model_rf <- train(
+  diabetes ~ ., 
+  data = train,
+  method = "rf",
+  ntree = 500,
+  importance = TRUE,
+  trControl = trainControl(method = "cv", number = 5)
+)
+print(model_rf)
+pred_tree <- predict(model_tree, newdata = test)
+acc_tree <- mean(pred_tree == test$diabetes)
+acc_tree
+pred_rf <- predict(model_rf, newdata = test)
+acc_rf <- mean(pred_rf == test$diabetes)
+acc_rf
+varImp_tree <- varImp(model_tree)
+plot(varImp_tree, main = "Variable Importance - Decision Tree")
+varImp_rf <- varImp(model_rf)
+plot(varImp_rf, main = "Variable Importance - Random Forest")
+```
+
+2. Train and Test a `glmnet` model. Plot the variable importance of the model.
+```{r}
+install.packages("glmnet")
+library(glmnet)
+set.seed(123)
+index <- createDataPartition(df$diabetes, p = 0.8, list = FALSE)
+train <- df[index, ]
+test  <- df[-index, ]
+set.seed(123)
+model_glmnet <- train(
+  diabetes ~ ., 
+  data = train,
+  method = "glmnet",
+  trControl = trainControl(method = "cv", number = 5),
+  tuneLength = 10
+)
+pred_glmnet <- predict(model_glmnet, newdata = test)
+acc_glmnet <- mean(pred_glmnet == test$diabetes)
+acc_glmnet
+importance_glmnet <- varImp(model_glmnet)
+plot(importance_glmnet, main = "Variable Importance - GLMNET")
+```
+
+3. Train and test two models that are not `ranger`, `glmnet` or `rpart`  with caret. If possible, plot the variable importance of the model. 
+```{r}
+install.packages("e1071")
+library(e1071)
+set.seed(123)
+index <- createDataPartition(df$diabetes, p = 0.8, list = FALSE)
+train <- df[index, ]
+test  <- df[-index, ]
+set.seed(123)
+model_knn <- train(
+  diabetes ~ ., 
+  data = train,
+  method = "knn",
+  tuneLength = 10,
+  trControl = trainControl(method = "cv", number = 5)
+)
+model_knn
+pred_knn <- predict(model_knn, newdata = test)
+acc_knn <- mean(pred_knn == test$diabetes)
+varImp_knn <- varImp(model_knn)
+plot(varImp_knn, main = "Variable Importance - KNN")
+```
+

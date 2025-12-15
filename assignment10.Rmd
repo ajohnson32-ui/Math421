@@ -1,0 +1,172 @@
+
+---
+output: 
+  html_document:
+  pdf_document: default
+  word_document: default
+title: "Assignment 10: Predictive Modeling - Part 1"
+---
+
+***How to do it?***: 
+
+- Open the Rmarkdown file of this assignment ([link](assignment10.Rmd)) in Rstudio. 
+
+- Right under each **question**, insert  a code chunk (you can use the hotkey `Ctrl + Alt + I` to add a code chunk) and code the solution for the question. 
+
+- `Knit` the rmarkdown file (hotkey: `Ctrl + Alt + K`) to export an html.  
+
+-  Publish the html file to your Githiub Page. 
+
+***Submission***: Submit the link on Github of the assignment to Canvas
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+
+-------
+
+1. Use the `Adult Census Income` dataset.  We will predict the income (whether or not it is more than 50k or not) of an adult. Import the dataset.  Partition the data into 80% training and 20% testing.  
+```{r}
+library(dplyr)
+census <- read.csv("C:/Users/student/Downloads/adult_census_missing.csv")
+census <- census %>% select(-workclass, -race, -marital.status, -education, -occupation, -relationship, -native.country)
+census <- census %>% rename(target=income)
+census <- census %>% 
+  mutate(target = as.factor(target),
+         fnlwgt = as.factor(fnlwgt),
+         education.num = as.factor(education.num),
+         sex = as.factor(sex),
+         capital.gain = as.factor(capital.gain),
+         capital.loss = as.factor(capital.loss),
+         hours.per.week = as.factor(hours.per.week)
+         )
+mean_age <- mean(census$age, na.rm=TRUE)
+df$age <- replace_na(census$age, mean_age)
+census = drop_na(census)
+library(caret)
+set.seed(123)
+splitIndex <- createDataPartition(census$target, p = .80,
+                                  list= FALSE)
+census_train <- census[splitIndex,]
+census_test <- census[-splitIndex,]
+```
+
+
+2. Practice Decision Tree.  Do the follows:
+
+  - Use `rpart` package, create a decision tree with maximum depth of 3. 
+  
+  - Calculate the accuracy of the model on the testing data. Notice that the positive outcome here is not `1` but `>50K` or `<50K`. 
+  
+  - Plot the tree
+  
+  - Plot the variable importance by the tree
+```{r}
+library(rpart)
+library(rpart.plot)
+tree_model <- rpart(
+  income ~ ., 
+  data = train_data, 
+  method = "class",
+  control = rpart.control(maxdepth = 3)
+)
+rpart.plot(tree_model, type = 2, extra = 104, fallen.leaves = TRUE)
+rpart.plot(tree_model, type = 2, extra = 104, fallen.leaves = TRUE)
+accuracy <- mean(predictions == test_data$income)
+accuracy
+varImp <- tree_model$variable.importance
+varImp
+barplot(varImp, main = "Variable Importance from Decision Tree", 
+        col = "steelblue", las = 2)
+```
+  
+3. Create 3 more trees and compare the testing accuracy of these trees, which tree give the highest testing accuracy.
+```{r}
+tree2 <- rpart(income ~ ., data = train_data, method = "class",
+               control = rpart.control(maxdepth = 5))
+pred2 <- predict(tree2, newdata = test_data, type = "class")
+acc2 <- mean(pred2 == test_data$income)
+tree3 <- rpart(income ~ ., data = train_data, method = "class",
+               control = rpart.control(maxdepth = 7))
+pred3 <- predict(tree3, newdata = test_data, type = "class")
+acc3 <- mean(pred3 == test_data$income)
+tree4 <- rpart(income ~ ., data = train_data, method = "class")
+pred4 <- predict(tree4, newdata = test_data, type = "class")
+acc4 <- mean(pred4 == test_data$income)
+accuracy_table <- data.frame(
+  Tree = c("Tree1 (maxdepth=3)", "Tree2 (maxdepth=5)", 
+           "Tree3 (maxdepth=7)", "Tree4 (default)"),
+  Accuracy = c(acc1, acc2, acc3, acc4)
+)
+
+accuracy_table
+best_tree <- accuracy_table[which.max(accuracy_table$Accuracy), ]
+best_tree
+```
+
+
+4. Practice Random Forest.  Do the follows: 
+
+  - Use `randomForest` package, create a random forest of 1000 trees. 
+  
+  - Calculate the accuracy of the model on the testing data. 
+  
+  - Plot the variable importance by the forest
+```{r}
+install.packages("randomForest")
+library(randomForest)
+set.seed(123) 
+rf_model <- randomForest(
+  income ~ ., 
+  data = train_data, 
+  ntree = 1000,        
+  importance = TRUE 
+)
+rf_pred <- predict(rf_model, newdata = test_data)
+rf_accuracy <- mean(rf_pred == test_data$income)
+rf_accuracy
+varImp_rf <- importance(rf_model)
+varImp_rf
+varImpPlot(rf_model, main = "Variable Importance from Random Forest")
+```
+
+5. Create 3 more forests and compare the testing accuracy of these forests, which forest give the highest testing accuracy.
+```{r}
+rf1 <- randomForest(income ~ ., data = train_data, ntree = 1000, importance = TRUE)
+pred1 <- predict(rf1, newdata = test_data)
+acc1 <- mean(pred1 == test_data$income)
+rf2 <- randomForest(income ~ ., data = train_data, ntree = 500, importance = TRUE)
+pred2 <- predict(rf2, newdata = test_data)
+acc2 <- mean(pred2 == test_data$income)
+rf3 <- randomForest(income ~ ., data = train_data, ntree = 1500, importance = TRUE)
+pred3 <- predict(rf3, newdata = test_data)
+acc3 <- mean(pred3 == test_data$income)
+rf4 <- randomForest(income ~ ., data = train_data, ntree = 1000, mtry = 5, importance = TRUE)
+pred4 <- predict(rf4, newdata = test_data)
+acc4 <- mean(pred4 == test_data$income)
+accuracy_table <- data.frame(
+  Forest = c("RF1 (ntree=1000, default mtry)", 
+             "RF2 (ntree=500)", 
+             "RF3 (ntree=1500)", 
+             "RF4 (ntree=1000, mtry=5)"),
+  Accuracy = c(acc1, acc2, acc3, acc4)
+)
+
+accuracy_table
+best_forest <- accuracy_table[which.max(accuracy_table$Accuracy), ]
+best_forest
+```
+
+6. What is the best model (in term of testing accuracy) among all models (including trees and forests) you have trained?
+```{r}
+all_models <- data.frame(
+  Model = c("Tree1", "Tree2", "Tree3", "Tree4", "RF1", "RF2", "RF3", "RF4"),
+  Accuracy = c(acc1, acc2, acc3, acc4, acc1_rf, acc2_rf, acc3_rf, acc4_rf)
+)
+
+all_models
+best_model <- all_models[which.max(all_models$Accuracy), ]
+best_model
+```
+
