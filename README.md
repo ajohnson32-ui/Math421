@@ -13,7 +13,7 @@ This is my fifth assignment: [part1](assignment5_part1.Rmd) [part2](assignment5_
 
 This is my sixth assignment: [Assignment 6](assignment6.Rmd)
 
-This is my seventh assignment: [Assignment 7](assignment7.Rmd)
+This is my seventh assignment: [Assignment 7](assignment7.qmd)
 
 This is my eighth assignment: [Assignment 8](assignment8.Rmd)
 
