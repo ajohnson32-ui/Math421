@@ -1,0 +1,853 @@
+
+---
+title: "Math 421 - Midterm"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+    theme: united
+  word_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Instruction
+
+The midterm has two components: the Rmarkdown notebook (html) and the presentation.  We will do the presentation in class. Post both the notebook and the presentation on your Github page. 
+
+**The notebook:** The notebook should be created using `rmarkdown` or Quarto (like other assignments). The notebook should have a title. 
+
+
+**The Presentation:** Present your results in 5-10 minutes. To make the presentation using Rmarkdown, do the follows: 
+
+    - In Rstudio -> File -> New File -> R markdown
+    
+    - In the left panel, click to Presentation -> Click OK
+    
+    - Now you have an Rmarkdown that can be knitted to be a html presentation 
+    
+- You can also use the Rmd templates of the class slides. 
+
+- You can also use Quarto to create the presentation: *In Rstudio -> File -> New File -> Quarto Presentation...*
+    
+- You do not need to rerun all the codes for the presentation. For example, to show the model comparison, you just need to show the image of the model comparison instead of running all the models again.
+    
+- To inset an image in a slide, use  `![](image.png)`
+
+- To scale images, you can use `![](image.png){width="60%"}` or follow these below instructions. 
+    
+    - https://bookdown.org/yihui/rmarkdown-cookbook/figure-size.html
+    
+    - http://zevross.com/blog/2017/06/19/tips-and-tricks-for-working-with-images-and-figures-in-r-markdown-documents/
+
+- To turn off message and warning of a code cell, use:  `{r, message=FALSE, warning=FALSE}` for the cell. 
+
+**What to present**:
+
+  - Present Part 2 - Visualization
+  
+  - Present Question Question 4, 5 and 6 in Part 3.  
+  
+  - Present any errors/challenges you run into and how you fix/overcome them. 
+
+**Data:**  
+
+The data for the mid-term project is the Rhode Island Department of Health Hospital Discharge Data.  Each row of the data presents a patient. 
+
+Link: https://drive.google.com/open?id=15QNBf6YYKocK2nNIfpKDer58kQnCPNZJ 
+
+**Notice**
+
+- Since this is a large dataset, you could try to run the codes on the smaller dataset, which is a portion of the original dataset before running the codes on the original data.  To create a random subset of the data you could use
+
+```{r, eval=FALSE}
+# find the number of rows of the data
+n = nrow(df)
+
+# subset 1000 rows of the data
+df1 = df[sample(1:n, 1000), ]
+```
+
+
+-------
+
+## I. Data Wranggling
+
+1. Download the data file `hdd0318cy.sas7bdat`.  
+
+2. Use `read_sas` in library `haven` to read the data. 
+    
+3. Filter the data to have only patients of the year 2018 (`yod=18`)
+    
+4. Select to work with only following variables: 
+
+```{r, eval=FALSE}
+                      "yod", "payfix","pay_ub92","age",  
+                      "sex","raceethn","provider","moa", 
+                      "yoa","mod","admtype", "asource" , 
+                      "preopday" ,"los", "service" , "icu","ccu",    
+                      "dispub92", "payer"  ,"drg","trandb", 
+                      "randbg","randbs","orr", "anes","seq",   
+                      "lab","dtest", "ther","blood","phar", 
+                      "other","patcon","bwght","total","tot" ,  
+                      "ecodub92","b_wt","pt_state","diag_adm","ancilar" ,
+                      "campus","er_fee","er_chrg","er_mode","obs_chrg",
+                      "obs_hour","psycchrg","nicu_day"
+```
+```{r}
+library(haven)
+library(dplyr)
+hdd <- read_sas("hdd0318cy.sas7bdat")
+hdd_2018 <- hdd %>%
+  filter(yod == 18)
+vars_to_keep <- c(
+  "yod", "payfix","pay_ub92","age",  
+  "sex","raceethn","provider","moa", 
+  "yoa","mod","admtype", "asource", 
+  "preopday","los", "service","icu","ccu",    
+  "dispub92", "payer","drg","trandb", 
+  "randbg","randbs","orr", "anes","seq",   
+  "lab","dtest", "ther","blood","phar", 
+  "other","patcon","bwght","total","tot",  
+  "ecodub92","b_wt","pt_state","diag_adm","ancilar",
+  "campus","er_fee","er_chrg","er_mode","obs_chrg",
+  "obs_hour","psycchrg","nicu_day"
+)
+
+hdd_2018_selected <- hdd_2018 %>%
+  select(all_of(vars_to_keep))
+
+```
+ 
+
+*Notice*:  You may want to save the current data to your computer for easy access later.  To save the data file use `write_csv(df, 'midterm.csv')`, for example.  Also notice that, empty values in the data before writing to csv may turn to NAs later when you re-read the file. 
+
+5. What are variables that have missing values?
+ 
+6. Remove all variables with missing values. 
+```{r}
+na_counts <- colSums(is.na(hdd_2018_selected))
+na_counts
+vars_with_na <- names(na_counts[na_counts > 0])
+vars_with_na
+
+hdd_2018_no_na_vars <- hdd_2018_selected %>%
+  select(where(~ sum(is.na(.)) == 0))
+
+```
+ 
+7. Refer to the data description in the file `HDD2015-18cy6-20-19.docx`, which variable recording the month of admission?, which variable recording the month of discharge?
+```{r}
+#MOA records month of admission
+#MOD records month of discharge
+```
+
+8. Which month admitted the most number of patients? Which month admitted the most number of male patients?
+
+```{r}
+admissions_by_month <- hdd_2018_selected %>%
+  filter(!is.na(moa)) %>%
+  count(moa, sort = TRUE)
+admissions_by_month
+admissions_by_month %>%
+  slice(1)
+male_admissions_by_month <- hdd_2018_selected %>%
+  filter(sex == 1, !is.na(moa)) %>%
+  count(moa, sort = TRUE)
+male_admissions_by_month
+male_admissions_by_month %>%
+  slice(1)
+```
+
+9. Which month has the most number of teenage female patients?
+```{r}
+teen_female_by_month <- hdd_2018_selected %>%
+  filter(
+    sex == 2,
+    age >= 13, age <= 19,
+    !is.na(moa)
+  ) %>%
+  count(moa, sort = TRUE)
+
+teen_female_by_month
+teen_female_by_month %>%
+  slice(1)
+
+```
+
+10. Which provider has the most number of female patients in October? 
+```{r}
+female_oct_provider <- hdd_2018_selected %>%
+  filter(
+    sex == 2,
+    moa == 10
+  ) %>%
+  count(provider, sort = TRUE)
+
+female_oct_provider
+female_oct_provider %>%
+  slice(1)
+
+```
+
+11. Are female patients older than male patients, on average? 
+```{r}
+avg_age_by_sex <- hdd_2018_selected %>%
+  filter(!is.na(age), sex %in% c(1, 2)) %>%
+  group_by(sex) %>%
+  summarise(
+    mean_age = mean(age),
+    n = n()
+  )
+
+avg_age_by_sex
+avg_age_by_sex %>%
+  mutate(
+    sex_label = ifelse(sex == 1, "Male", "Female")
+  )
+```
+
+12. Calculate the average age of patients by months. Which month has the oldest patients on average age?
+```{r}
+avg_age_by_month <- hdd_2018_selected %>%
+  filter(!is.na(age), !is.na(moa)) %>%
+  group_by(moa) %>%
+  summarise(
+    avg_age = mean(age),
+    n = n()
+  ) %>%
+  arrange(desc(avg_age))
+
+avg_age_by_month
+avg_age_by_month %>%
+  slice(1)
+```
+
+13. What is the name of the provider that has the highest total charge?
+```{r}
+total_charge_by_provider <- hdd_2018_selected %>%
+  filter(!is.na(tot)) %>%
+  group_by(provider) %>%
+  summarise(
+    total_charge = sum(tot),
+    n = n()
+  ) %>%
+  arrange(desc(total_charge))
+
+total_charge_by_provider
+
+top_provider %>%
+  mutate(
+    provider_name = case_when(
+      provider == 7201 ~ "Newport",
+      provider == 7202 ~ "St. Joseph Health Services of RI",
+      provider == 7203 ~ "Memorial",
+      provider == 7204 ~ "Miriam",
+      provider == 7205 ~ "Rhode Island Hospital",
+      provider == 7206 ~ "Roger Williams",
+      provider == 7209 ~ "South County",
+      provider == 7210 ~ "Kent County",
+      provider == 7211 ~ "Westerly",
+      provider == 7212 ~ "Rehab of RI",
+      provider == 7213 ~ "Landmark Medical Center",
+      provider == 7214 ~ "Women and Infants",
+      provider == 7215 ~ "Bradley",
+      provider == 7216 ~ "Butler",
+      TRUE ~ "Other"
+    )
+  )
+top_provider <- total_charge_by_provider %>%
+  slice(1)
+top_provider
+```
+
+14. What is the name of the provider that has the least total charge for teenage male on average?
+```{r}
+teen_male_avg_charge <- hdd_2018_selected %>%
+  filter(
+    sex == 1,
+    age >= 13, age <= 19,
+    !is.na(tot)
+  ) %>%
+  group_by(provider) %>%
+  summarise(
+    avg_total_charge = mean(tot),
+    n = n()
+  ) %>%
+  arrange(avg_total_charge)
+teen_male_avg_charge
+
+lowest_provider <- teen_male_avg_charge %>%
+  slice(1)
+lowest_provider
+lowest_provider %>%
+  mutate(
+    provider_name = case_when(
+      provider == 7201 ~ "Newport",
+      provider == 7202 ~ "St. Joseph Health Services of RI",
+      provider == 7203 ~ "Memorial",
+      provider == 7204 ~ "Miriam",
+      provider == 7205 ~ "Rhode Island Hospital",
+      provider == 7206 ~ "Roger Williams",
+      provider == 7209 ~ "South County",
+      provider == 7210 ~ "Kent County",
+      provider == 7211 ~ "Westerly",
+      provider == 7212 ~ "Rehab of RI",
+      provider == 7213 ~ "Landmark Medical Center",
+      provider == 7214 ~ "Women and Infants",
+      provider == 7215 ~ "Bradley",
+      provider == 7216 ~ "Butler",
+      TRUE ~ "Other"
+    )
+  )
+
+```
+
+15. Create a season (Spring, Summer, Fall, Winter) variable. Calculate the length of stays by season.  Which season has the longest length of stays on average?
+```{r}
+hdd_2018_season <- hdd_2018_selected %>%
+  filter(!is.na(moa), !is.na(los)) %>%
+  mutate(
+    season = case_when(
+      moa %in% c(12, 1, 2) ~ "Winter",
+      moa %in% c(3, 4, 5)  ~ "Spring",
+      moa %in% c(6, 7, 8)  ~ "Summer",
+      moa %in% c(9, 10, 11) ~ "Fall"
+    )
+  )
+los_by_season <- hdd_2018_season %>%
+  group_by(season) %>%
+  summarise(
+    avg_los = mean(los),
+    n = n()
+  ) %>%
+  arrange(desc(avg_los))
+los_by_season
+
+los_by_season %>%
+  slice(1)
+
+```
+
+16. On average, how much a 20 year-old male get charged for staying 1 day in the Fall season?
+```{r}
+avg_charge_20yo_male_fall <- hdd_2018_selected %>%
+  filter(
+    age == 20,
+    sex == 1,
+    los == 1,
+    moa %in% c(9, 10, 11),
+    !is.na(tot)
+  ) %>%
+  summarise(
+    avg_charge = mean(tot),
+    n = n()
+  )
+
+avg_charge_20yo_male_fall
+```
+
+17. Write a paragraph to summarize the section and give your comments on the results. You could do some other calculations to support your points. 
+```{r}
+#In this section, I analyzed the 2018 hospital discharge data to examine how patient characteristics, seasonality, and providers relate to length of stay and charges. After creating a season variable, I found that patients admitted in the Fall had the longest average length of stay. I also observed that hospital charges varied across providers and patient subgroups, reflecting differences in case complexity and services provided. Overall, the results suggest that both season and provider play an important role in hospital utilization and costs, though some findings may be affected by small sample sizes and should be interpreted cautiously.
+```
+
+-------
+
+## II. Data Visualization
+
+Continue with the data from part I. 
+
+1. Provides at least 10 meaningful plots. Comments on the plots. All plots should have title, caption, appropriate labels on x and y-axis
+```{r}
+#1
+library(dplyr)
+library(ggplot2)
+
+ggplot(hdd_2018_selected, aes(x = factor(moa))) +
+  geom_bar() +
+  labs(
+    title = "Number of Hospital Admissions by Month (2018)",
+    x = "Month of Admission",
+    y = "Number of Admissions",
+    caption = "Source: Rhode Island Hospital Discharge Data, 2018"
+  )
+#Admissions vary by month, suggesting seasonality in hospital utilization
+```
+```{r}
+#2
+ggplot(hdd_2018_selected, aes(x = factor(sex))) +
+  geom_bar() +
+  labs(
+    title = "Hospital Admissions by Sex",
+    x = "Sex (1 = Male, 2 = Female)",
+    y = "Number of Admissions",
+    caption = "Source: Rhode Island Hospital Discharge Data, 2018"
+  )
+#Female patients account for a slightly higher share of admissions
+```
+```{r}
+#3
+ggplot(hdd_2018_selected, aes(x = age)) +
+  geom_histogram(binwidth = 5) +
+  labs(
+    title = "Distribution of Patient Age",
+    x = "Age",
+    y = "Count",
+    caption = "Source: Rhode Island Hospital Discharge Data, 2018"
+  )
+#The distribution is right-skewed, with a higher concentration of older patients
+```
+```{r}
+#4
+ggplot(hdd_2018_selected, aes(x = factor(sex), y = age)) +
+  geom_boxplot() +
+  labs(
+    title = "Patient Age by Sex",
+    x = "Sex (1 = Male, 2 = Female)",
+    y = "Age",
+    caption = "Source: Rhode Island Hospital Discharge Data, 2018"
+  )
+#Male patients appear slightly older than female patients on average
+```
+```{r}
+
+#5
+ggplot(hdd_2018_selected, aes(x = los)) +
+  geom_histogram(binwidth = 1) +
+  labs(
+    title = "Distribution of Length of Stay",
+    x = "Length of Stay (Days)",
+    y = "Count",
+    caption = "Source: Rhode Island Hospital Discharge Data, 2018"
+  )
+#Most patients stay only a few days, with a long tail of extended stays
+```
+```{r}
+#6
+hdd_2018_selected %>%
+  mutate(
+    season = case_when(
+      moa %in% c(12, 1, 2) ~ "Winter",
+      moa %in% c(3, 4, 5)  ~ "Spring",
+      moa %in% c(6, 7, 8)  ~ "Summer",
+      moa %in% c(9, 10, 11) ~ "Fall"
+    )
+  ) %>%
+  ggplot(aes(x = season, y = los)) +
+  geom_boxplot() +
+  labs(
+    title = "Length of Stay by Season",
+    x = "Season",
+    y = "Length of Stay (Days)",
+    caption = "Source: Rhode Island Hospital Discharge Data, 2018"
+  )
+#The distributions are relatively the same with many outliers in the fall and winter
+```
+```{r}
+#7
+ggplot(hdd_2018_selected, aes(x = tot)) +
+  geom_histogram(binwidth = 5000) +
+  labs(
+    title = "Distribution of Total Patient Charges",
+    x = "Total Charges (USD)",
+    y = "Count",
+    caption = "Source: Rhode Island Hospital Discharge Data, 2018"
+  )
+#Charges are highly right-skewed, with a small number of very costly cases
+```
+```{r}
+#8
+hdd_2018_selected %>%
+  group_by(provider) %>%
+  summarise(avg_charge = mean(tot, na.rm = TRUE)) %>%
+  ggplot(aes(x = factor(provider), y = avg_charge)) +
+  geom_col() +
+  labs(
+    title = "Average Total Charges by Provider",
+    x = "Provider Code",
+    y = "Average Total Charges (USD)",
+    caption = "Source: Rhode Island Hospital Discharge Data, 2018"
+  )
+#Bradley had the most number of charges
+```
+```{r}
+#9
+ggplot(hdd_2018_selected, aes(x = icu, y = los)) +
+  geom_boxplot() +
+  labs(
+    title = "Length of Stay by ICU Days",
+    x = "ICU Days",
+    y = "Length of Stay (Days)",
+    caption = "Source: Rhode Island Hospital Discharge Data, 2018"
+  )
+#ICU use is strongly associated with longer hospital stays
+```
+```{r}
+#10
+ggplot(hdd_2018_selected, aes(x = los, y = tot)) +
+  geom_point(alpha = 0.3) +
+  labs(
+    title = "Total Charges vs Length of Stay",
+    x = "Length of Stay (Days)",
+    y = "Total Charges (USD)",
+    caption = "Source: Rhode Island Hospital Discharge Data, 2018"
+  )
+#Total charges are positively correlated with length of stay
+```
+
+2. Make an animation plot. 
+```{r}
+library(dplyr)
+library(ggplot2)
+library(gganimate)
+
+monthly_provider_counts <- hdd_2018_selected %>%
+  filter(!is.na(moa)) %>%
+  group_by(moa, provider) %>%
+  summarise(n = n(), .groups = "drop")
+
+p <- ggplot(monthly_provider_counts,
+            aes(x = factor(provider), y = n, group = provider)) +
+  geom_col(fill = "steelblue") +
+  labs(
+    title = "Hospital Admissions by Provider",
+    subtitle = "Month of Admission: {closest_state}",
+    x = "Provider Code",
+    y = "Number of Admissions",
+    caption = "Source: Rhode Island Hospital Discharge Data, 2018"
+  ) +
+  transition_states(
+    moa,
+    transition_length = 2,
+    state_length = 1
+  ) +
+  ease_aes("cubic-in-out")
+p
+
+#This animation illustrates how hospital admissions vary by provider across months in 2018
+```
+
+3. Write a paragraph to summarize the section and give your comments on the results. 
+```{r}
+#In this section, I used both static and animated plots to explore patterns in the 2018 hospital discharge data. The static plots highlighted key relationships between patient demographics, seasonality, length of stay, and hospital charges, showing clear variation by month, sex, provider, and season. The animated plot further extended these insights by illustrating how admission volumes for different providers changed over time, making seasonal trends and provider-specific patterns more apparent. Together, these visualizations show that hospital utilization and costs are strongly influenced by time of year, patient characteristics, and provider differences
+```
+
+-------
+
+## III. Predictive Models
+
+Continue with the data from part I. Make sure you do not have any missing values in the data. Use the follows as the target and input variables: 
+
+*Target Variable*: Create the target variable taking value of 
+
+  - `low` if the total charge of a patient (`tot`) is smaller than the median of the total charge, and
+
+  - `high` otherwise. 
+
+*Input Variables*:
+
+  - "age","sex","raceethn","provider","moa","mod","admtype","campus", 'los'
+  
+-------
+
+1. Use `filter` function to filter out rows where `raceethn==''` or `admtype==''`. Make sure all the categorical variables are factor, numeric variables are numeric. Set Training : Testing Split = 10 : 90 
+```{r}
+model_data <- hdd_2018_selected %>%
+  select(
+    tot,
+    age, sex, raceethn, provider, moa, mod,
+    admtype, campus, los
+  )
+model_data <- model_data %>%
+  filter(complete.cases(.))
+model_data <- model_data %>%
+  filter(
+    raceethn != "",
+    admtype != ""
+  )
+median_tot <- median(model_data$tot)
+
+model_data <- model_data %>%
+  mutate(
+    target = ifelse(tot < median_tot, "low", "high")
+  )
+model_data <- model_data %>%
+  mutate(
+    sex = factor(sex),
+    raceethn = factor(raceethn),
+    provider = factor(provider),
+    moa = factor(moa),
+    mod = factor(mod),
+    admtype = factor(admtype),
+    campus = factor(campus),
+    target = factor(target)
+  )
+colSums(is.na(model_data))
+
+set.seed(123)
+
+n <- nrow(model_data)
+train_index <- sample(seq_len(n), size = 0.10 * n)
+
+train_data <- model_data[train_index, ]
+test_data  <- model_data[-train_index, ]
+
+dim(train_data)
+dim(test_data)
+
+prop.table(table(train_data$target))
+prop.table(table(test_data$target))
+
+```
+
+2. Train a decision tree using `rpart`.  Plot the decision tree. Plot the variable importance ranked by the tree. 
+```{r}
+library(rpart)
+library(rpart.plot)
+
+set.seed(123)
+
+tree_model <- rpart(
+  target ~ age + sex + raceethn + provider + moa + mod +
+    admtype + campus + los,
+  data = train_data,
+  method = "class"
+)
+
+rpart.plot(
+  tree_model,
+  type = 2,
+  extra = 104,
+  fallen.leaves = TRUE,
+  main = "Decision Tree for Total Charge Classification"
+)
+
+var_imp <- tree_model$variable.importance
+
+var_imp_df <- data.frame(
+  variable = names(var_imp),
+  importance = as.numeric(var_imp)
+) %>%
+  arrange(desc(importance))
+
+library(ggplot2)
+
+ggplot(var_imp_df, aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "Variable Importance from Decision Tree",
+    x = "Variable",
+    y = "Importance",
+    caption = "Importance ranked by rpart decision tree"
+  )
+
+
+```
+
+3. Using caret for this question. Set `Training Control` to be: Use Cross-Validation of 5 folds across all models.  Train & tune at least 2 different models (i.e. two different values for `method=` in the train function of caret).  Plot the hyper-parameter tuning plots for each model. 
+```{r}
+library(caret)
+set.seed(123)
+
+train_ctrl <- trainControl(
+  method = "cv",
+  number = 5,
+  classProbs = TRUE
+)
+
+set.seed(123)
+
+model_rpart <- train(
+  target ~ age + sex + raceethn + provider + moa + mod +
+    admtype + campus + los,
+  data = train_data,
+  method = "rpart",
+  trControl = train_ctrl,
+  tuneLength = 10
+)
+model_rpart
+
+plot(model_rpart) +
+  labs(
+    title = "Hyper-Parameter Tuning: Decision Tree (rpart)",
+    x = "Complexity Parameter (cp)",
+    y = "Accuracy"
+  )
+
+#2
+model_rf <- train(
+  target ~ age + sex + raceethn + provider + moa + mod +
+    admtype + campus + los,
+  data = train_data,
+  method = "ranger",
+  trControl = train_ctrl,
+  tuneLength = 5,
+  importance = "impurity"
+)
+model_rf
+
+plot(model_rf) +
+  labs(
+    title = "Hyper-Parameter Tuning: Random Forest (ranger)",
+    x = "mtry",
+    y = "Accuracy"
+  )
+
+```
+
+4. Plot the comparison of the models in 3. 
+```{r}
+model_list <- resamples(list(
+  Decision_Tree = model_rpart,
+  Random_Forest = model_rf
+))
+summary(model_list)
+
+bwplot(
+  model_list,
+  metric = "Accuracy",
+  main = "Model Comparison Using 5-Fold Cross-Validation"
+)
+
+dotplot(
+  model_list,
+  metric = "Accuracy",
+  main = "Accuracy Comparison of Models"
+)
+```
+
+5. What is your final selection for the model? Test the accuracy of your final model on the test data. 
+```{r}
+rf_predictions <- predict(model_rf, newdata = test_data)
+conf_mat <- confusionMatrix(
+  rf_predictions,
+  test_data$target
+)
+
+conf_mat
+conf_mat$overall["Accuracy"]
+
+```
+
+6. Create another `target` variable (binary), decide the input variables and redo 1 to 5. 
+```{r}
+#1
+library(dplyr)
+
+model_data2 <- hdd_2018_selected %>%
+  select(
+    los, age, sex, raceethn, provider, moa,
+    admtype, campus, icu
+  )
+model_data2 <- model_data2 %>%
+  filter(
+    complete.cases(.),
+    raceethn != "",
+    admtype != ""
+  )
+model_data2 <- model_data2 %>%
+  mutate(
+    long_stay = ifelse(los > 3, "long", "short")
+  )
+model_data2 <- model_data2 %>%
+  mutate(
+    long_stay = factor(long_stay),
+    sex = factor(sex),
+    raceethn = factor(raceethn),
+    provider = factor(provider),
+    moa = factor(moa),
+    admtype = factor(admtype),
+    campus = factor(campus),
+    icu = as.numeric(icu),
+    age = as.numeric(age),
+    los = as.numeric(los)
+  )
+colSums(is.na(model_data2))
+
+#2
+set.seed(123)
+
+n <- nrow(model_data2)
+train_index2 <- sample(seq_len(n), size = 0.10 * n)
+
+train_data2 <- model_data2[train_index2, ]
+test_data2  <- model_data2[-train_index2, ]
+
+#3
+library(caret)
+
+train_ctrl <- trainControl(
+  method = "cv",
+  number = 5
+)
+set.seed(123)
+
+model2_rpart <- train(
+  long_stay ~ age + sex + raceethn + provider +
+    moa + admtype + campus + icu,
+  data = train_data2,
+  method = "rpart",
+  trControl = train_ctrl,
+  tuneLength = 10
+)
+plot(model2_rpart) +
+  labs(
+    title = "Hyper-Parameter Tuning: Decision Tree (LOS Target)",
+    x = "Complexity Parameter",
+    y = "Accuracy"
+  )
+
+model2_rf <- train(
+  long_stay ~ age + sex + raceethn + provider +
+    moa + admtype + campus + icu,
+  data = train_data2,
+  method = "ranger",
+  trControl = train_ctrl,
+  tuneLength = 5,
+  importance = "impurity"
+)
+plot(model2_rf) +
+  labs(
+    title = "Hyper-Parameter Tuning: Random Forest (LOS Target)",
+    x = "mtry",
+    y = "Accuracy"
+  )
+
+#4
+model2_list <- resamples(list(
+  Decision_Tree = model2_rpart,
+  Random_Forest = model2_rf
+))
+bwplot(
+  model2_list,
+  metric = "Accuracy",
+  main = "Model Comparison (Predicting Long vs Short Stay)"
+)
+
+#5
+rf2_predictions <- predict(model2_rf, newdata = test_data2)
+
+conf_mat2 <- confusionMatrix(
+  rf2_predictions,
+  test_data2$long_stay
+)
+
+conf_mat2
+conf_mat2$overall["Accuracy"]
+
+```
+
+7. Write a paragraph to summarize the section and give your comments on the results. 
+```{r}
+#In this section, I trained and evaluated classification models using two different binary target variables after carefully cleaning the data and removing missing values. Using 5-fold cross-validation, the random forest model consistently outperformed the decision tree in terms of accuracy and stability. The strong performance on the test data suggests that the models generalize well and that patient characteristics and hospital-related factors are important predictors of outcomes in the discharge data.
+```
+-------
