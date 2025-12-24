@@ -9,10 +9,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Andrew Johnson" />
 
 
-<title>Assignment 3</title>
+<title>Final Project - Building Interactive Dashboard</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -349,334 +348,189 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Assignment 3</h1>
-<h4 class="author">Andrew Johnson</h4>
+<h1 class="title toc-ignore">Final Project - Building Interactive
+Dashboard</h1>
 
 </div>
 
 
-<p><strong><em>Submission</em></strong>: Submit the link on Github of
-the assignment to Canvas under Assignment 3.</p>
 <hr />
-<div id="problems" class="section level2">
-<h2>Problems</h2>
-<p><br />
-</p>
-<ol style="list-style-type: decimal">
-<li>Create the following data frame</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th align="left">Rank</th>
-<th align="left">Age</th>
-<th align="left">Name</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left">0</td>
-<td align="left">28</td>
-<td align="left">Tom</td>
-</tr>
-<tr>
-<td align="left">1</td>
-<td align="left">34</td>
-<td align="left">Jack</td>
-</tr>
-<tr>
-<td align="left">2</td>
-<td align="left">29</td>
-<td align="left">Steve</td>
-</tr>
-<tr>
-<td align="left">3</td>
-<td align="left">42</td>
-<td align="left">Ricky</td>
-</tr>
-</tbody>
-</table>
-<pre class="r"><code>Rank &lt;- c(0, 1, 2, 3)
-Age  &lt;- c(28, 34, 29, 42)
-Name &lt;- c(&quot;Tom&quot;, &quot;Jack&quot;, &quot;Steve&quot;, &quot;Ricky&quot;)
-df &lt;- data.frame(Rank, Age, Name)
-print(df)</code></pre>
-<pre><code>##   Rank Age  Name
-## 1    0  28   Tom
-## 2    1  34  Jack
-## 3    2  29 Steve
-## 4    3  42 Ricky</code></pre>
-<ol start="2" style="list-style-type: decimal">
-<li>Use <code>read.csv</code> to import the Covid19 Vaccination data
-from WHO: <a href="https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv">link</a>.</li>
-</ol>
-<pre class="r"><code>data &lt;- read.csv(&quot;us-states.csv&quot;)</code></pre>
-<ol start="2" style="list-style-type: decimal">
-<li>Show the names of the variables in the data</li>
-</ol>
-<pre class="r"><code>data = read.csv(&#39;https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv&#39;)
-names(data)</code></pre>
-<pre><code>## [1] &quot;date&quot;   &quot;state&quot;  &quot;fips&quot;   &quot;cases&quot;  &quot;deaths&quot;</code></pre>
-<ol start="3" style="list-style-type: decimal">
-<li>How many columns and rows the data have?</li>
-</ol>
-<pre class="r"><code>nrow(data)</code></pre>
-<pre><code>## [1] 61942</code></pre>
-<pre class="r"><code>ncol(data)</code></pre>
-<pre><code>## [1] 5</code></pre>
-<ol start="4" style="list-style-type: decimal">
-<li>How many missing values are there? Show the missing values by
-columns. What variable has the most number of missing values?</li>
-</ol>
-<pre class="r"><code>sum(is.na(data))</code></pre>
-<pre><code>## [1] 0</code></pre>
-<pre class="r"><code>colSums(is.na(data))</code></pre>
-<pre><code>##   date  state   fips  cases deaths 
-##      0      0      0      0      0</code></pre>
-<pre class="r"><code>which.max(colSums(is.na(data)))</code></pre>
-<pre><code>## date 
-##    1</code></pre>
-<ol start="5" style="list-style-type: decimal">
-<li>What is the class of the <code>date</code> column. Change the
-<code>date</code> columns to <code>date</code> type using the
-<code>as.Date</code> function. Show the new class of the
-<code>date</code> column.</li>
-</ol>
-<pre class="r"><code>class(data$date)</code></pre>
-<pre><code>## [1] &quot;character&quot;</code></pre>
-<pre class="r"><code>data$date &lt;- as.Date(data$date)
-class(data$date)</code></pre>
-<pre><code>## [1] &quot;Date&quot;</code></pre>
-<ol start="6" style="list-style-type: decimal">
-<li>Capitalize the names of all the variables</li>
-</ol>
-<pre class="r"><code>names(data) &lt;- toupper(names(data))
-names(data)</code></pre>
-<pre><code>## [1] &quot;DATE&quot;   &quot;STATE&quot;  &quot;FIPS&quot;   &quot;CASES&quot;  &quot;DEATHS&quot;</code></pre>
-<ol start="7" style="list-style-type: decimal">
-<li>Find the average number of cases per day. Find the maximum cases a
-day.</li>
-</ol>
-<pre class="r"><code>mean(data$CASES, na.rm = TRUE)</code></pre>
-<pre><code>## [1] 889830.1</code></pre>
-<pre class="r"><code>max(data$CASES, na.rm = TRUE)</code></pre>
-<pre><code>## [1] 12169158</code></pre>
-<ol start="8" style="list-style-type: decimal">
-<li>How many states are there in the data?</li>
-</ol>
-<pre class="r"><code>length(unique(data$STATE))</code></pre>
-<pre><code>## [1] 56</code></pre>
-<ol start="9" style="list-style-type: decimal">
-<li>Create a new variable <code>weekdays</code> to store the weekday for
-each rows.</li>
-</ol>
-<pre class="r"><code>data$WEEKDAYS &lt;- weekdays(data$DATE)</code></pre>
-<ol start="10" style="list-style-type: decimal">
-<li>Create the categorical variable <code>death2</code> variable taking
-the values as follows</li>
-</ol>
+<p><strong>Submission Guideline:</strong> Create one html file from
+Rmarkdown that answer all the following questions. <strong>Each question
+should has it own Rmd file and a corresponding link</strong>. Include
+the link of the html file to your Github webpage and submit the link to
+the html file to Canvas.</p>
+<hr />
+<div id="question-1." class="section level3">
+<h3>Question 1.</h3>
 <ul>
-<li><code>has_death</code> if there is a death that day</li>
-<li><code>no_death</code> if there is no death that day</li>
+<li><p>Install the flexdashboard package using
+<code>install.packages(&quot;flexdashboard&quot;)</code>.</p></li>
+<li><p>Create an empty dashboard. In Rstudio, File -&gt; New File -&gt;
+R Markdown -&gt; From Template -&gt; Flex Dashboard. Knit the rmarkdown
+file and add the html link to this report.</p></li>
 </ul>
-<pre class="r"><code>data$DEATH2 &lt;- ifelse(data$DEATHS &gt; 0, &quot;has_death&quot;, &quot;no_death&quot;)</code></pre>
-<p>Find the frequency and relative frequency of <code>no_death</code>
-and <code>has_death</code>.</p>
-<pre class="r"><code>table(data$DEATH2)</code></pre>
-<pre><code>## 
-## has_death  no_death 
-##     60790      1152</code></pre>
-<pre class="r"><code>prop.table(table(data$DEATH2))</code></pre>
-<pre><code>## 
-##  has_death   no_death 
-## 0.98140196 0.01859804</code></pre>
-<ol start="11" style="list-style-type: decimal">
-<li>Find the first quartile (Q1), second quartile (Q2) and and third
-quartile (Q3) of the variable <code>death</code>. (Hint: Use the
-<code>summary</code> function)</li>
-</ol>
-<pre class="r"><code>summary(data$DEATHS)</code></pre>
-<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##       0    1171    5035   11779   14912  104277</code></pre>
-<pre class="r"><code>q1 &lt;- quantile(data$DEATHS, 0.25, na.rm = TRUE)
-q2 &lt;- quantile(data$DEATHS, 0.50, na.rm = TRUE)
-q3 &lt;- quantile(data$DEATHS, 0.75, na.rm = TRUE)
-
-q1</code></pre>
-<pre><code>##  25% 
-## 1171</code></pre>
-<pre class="r"><code>q2</code></pre>
-<pre><code>##  50% 
-## 5035</code></pre>
-<pre class="r"><code>q3</code></pre>
-<pre><code>##   75% 
-## 14912</code></pre>
-<ol start="12" style="list-style-type: decimal">
-<li>Create the categorical variable <code>death3</code> variable taking
-the values as follows</li>
-</ol>
+<p>Here is the <a href="FinalQ1.html">link</a> to this</p>
+</div>
+<div id="question-2." class="section level3">
+<h3>Question 2.</h3>
+<p>Use this template flex dashboard (<a href="https://bryantstats.github.io/math421/final/flex_template.html">dashboard</a>,
+<a href="https://bryantstats.github.io/math421/final/flex_template.Rmd">Rmd</a>)
+to create a flex dashboard that</p>
 <ul>
-<li><p><code>low_death</code> if the number of deaths smaller than the
-25 percentile (Q1)</p></li>
-<li><p><code>mid_death</code> if the number of deaths from Q1 to
-Q3</p></li>
-<li><p><code>high_death</code> if the number of deaths greater than
-Q3</p></li>
+<li><p>Has a side bar</p></li>
+<li><p>Has at least three main Tabs</p></li>
+<li><p>Has at least four plots</p></li>
+<li><p>Shows a table data that can be searched</p></li>
 </ul>
-<pre class="r"><code>q1</code></pre>
-<pre><code>##  25% 
-## 1171</code></pre>
-<pre class="r"><code>q3</code></pre>
-<pre><code>##   75% 
-## 14912</code></pre>
-<pre class="r"><code>data$DEATH3 &lt;- ifelse(data$DEATHS &lt; q1, &quot;low_death&quot;,
-                      ifelse(data$DEATHS &gt; q3, &quot;high_death&quot;, 
-                             &quot;mid_death&quot;))
-table(data$DEATH3)</code></pre>
-<pre><code>## 
-## high_death  low_death  mid_death 
-##      15483      15482      30977</code></pre>
-<ol start="13" style="list-style-type: decimal">
-<li>Find the average cases in Rhode Island in 2021</li>
-</ol>
-<pre class="r"><code>ri_2021 &lt;- subset(data, STATE == &quot;Rhode Island&quot; &amp; format(DATE, &quot;%Y&quot;) == &quot;2021&quot;)
-mean(ri_2021$CASES, na.rm = TRUE)</code></pre>
-<pre><code>## [1] 154438.5</code></pre>
-<ol start="14" style="list-style-type: decimal">
-<li>Find the median cases by weekdays in Rhode Island in 2021</li>
-</ol>
-<pre class="r"><code>tapply(ri_2021$CASES, ri_2021$WEEKDAYS, median, na.rm = TRUE)</code></pre>
-<pre><code>##    Friday    Monday  Saturday    Sunday  Thursday   Tuesday Wednesday 
-##  152643.0  152605.0  152578.5  152578.5  152683.0  152643.5  152675.5</code></pre>
-<ol start="15" style="list-style-type: decimal">
-<li>Compare the median cases in Rhode Island in June, July, August and
-September in 2021.</li>
-</ol>
-<pre class="r"><code>months &lt;- c(&quot;06&quot;, &quot;07&quot;, &quot;08&quot;, &quot;09&quot;)
-month_names &lt;- c(&quot;June&quot;, &quot;July&quot;, &quot;August&quot;, &quot;September&quot;)
-results &lt;- sapply(months, function(m) {
-  median(ri_2021$CASES[format(ri_2021$DATE, &quot;%m&quot;) == m], na.rm = TRUE)
-})
-names(results) &lt;- month_names
-results</code></pre>
-<pre><code>##      June      July    August September 
-##  152319.5  152971.0  158283.0  167814.0</code></pre>
-<ol start="16" style="list-style-type: decimal">
-<li>Find your own dataset, import it and implement the following
-functions on the data</li>
-</ol>
+<p>Include the link of the dashboard here.</p>
+<p>Here is the <a href="FinalQ2.Rmd">link</a> ggplot was not working
+properly so I had to change it to plot_ly</p>
+</div>
+<div id="question-3." class="section level3">
+<h3>Question 3.</h3>
+<p>We want users to be able to interact with our dashboard. This can be
+done using <code>shiny</code>. A flex dashboard using <code>shiny</code>
+requires a domain to host it. We will use shinyapps.io, which can host
+five dashboard for free. If we want to host more than five dashboards,
+we can create multiple accounts at shinyapps.io.</p>
+<p>Follow these below steps to create a shiny flex dashboard then
+publish it. Include the link of the dashboard here.</p>
 <ul>
-<li>head</li>
-<li>str</li>
-<li>names</li>
-<li>mean, min, max</li>
-<li>table</li>
-<li>is.na</li>
-<li>colSums</li>
-<li>class</li>
-<li>cor</li>
-<li>by</li>
-<li>ifelse</li>
-<li>case_when</li>
+<li><p>Install the following packages <code>shiny</code>,
+<code>packrat</code>, <code>rsconnect</code>.</p></li>
+<li><p>Go to <a href="https://www.shinyapps.io/" class="uri">https://www.shinyapps.io/</a> and create an account</p></li>
+<li><p>Go to <a href="https://www.shinyapps.io/admin/#/dashboard" class="uri">https://www.shinyapps.io/admin/#/dashboard</a>. Account
+-&gt; Tokens -&gt; Show -&gt; Show secret-&gt; Copy the secret
+code.</p></li>
 </ul>
-<pre class="r"><code>titanic &lt;- read.csv(&quot;C:/Users/student/Downloads/titanic.csv&quot;)
-head(titanic)</code></pre>
-<pre><code>##   PassengerId Survived Pclass
-## 1           1        0      3
-## 2           2        1      1
-## 3           3        1      3
-## 4           4        1      1
-## 5           5        0      3
-## 6           6        0      3
-##                                                  Name    Sex Age SibSp Parch
-## 1                             Braund, Mr. Owen Harris   male  22     1     0
-## 2 Cumings, Mrs. John Bradley (Florence Briggs Thayer) female  38     1     0
-## 3                              Heikkinen, Miss. Laina female  26     0     0
-## 4        Futrelle, Mrs. Jacques Heath (Lily May Peel) female  35     1     0
-## 5                            Allen, Mr. William Henry   male  35     0     0
-## 6                                    Moran, Mr. James   male  NA     0     0
-##             Ticket    Fare Cabin Embarked
-## 1        A/5 21171  7.2500              S
-## 2         PC 17599 71.2833   C85        C
-## 3 STON/O2. 3101282  7.9250              S
-## 4           113803 53.1000  C123        S
-## 5           373450  8.0500              S
-## 6           330877  8.4583              Q</code></pre>
-<pre class="r"><code>str(titanic)</code></pre>
-<pre><code>## &#39;data.frame&#39;:    891 obs. of  12 variables:
-##  $ PassengerId: int  1 2 3 4 5 6 7 8 9 10 ...
-##  $ Survived   : int  0 1 1 1 0 0 0 0 1 1 ...
-##  $ Pclass     : int  3 1 3 1 3 3 1 3 3 2 ...
-##  $ Name       : chr  &quot;Braund, Mr. Owen Harris&quot; &quot;Cumings, Mrs. John Bradley (Florence Briggs Thayer)&quot; &quot;Heikkinen, Miss. Laina&quot; &quot;Futrelle, Mrs. Jacques Heath (Lily May Peel)&quot; ...
-##  $ Sex        : chr  &quot;male&quot; &quot;female&quot; &quot;female&quot; &quot;female&quot; ...
-##  $ Age        : num  22 38 26 35 35 NA 54 2 27 14 ...
-##  $ SibSp      : int  1 1 0 1 0 0 0 3 0 1 ...
-##  $ Parch      : int  0 0 0 0 0 0 0 1 2 0 ...
-##  $ Ticket     : chr  &quot;A/5 21171&quot; &quot;PC 17599&quot; &quot;STON/O2. 3101282&quot; &quot;113803&quot; ...
-##  $ Fare       : num  7.25 71.28 7.92 53.1 8.05 ...
-##  $ Cabin      : chr  &quot;&quot; &quot;C85&quot; &quot;&quot; &quot;C123&quot; ...
-##  $ Embarked   : chr  &quot;S&quot; &quot;C&quot; &quot;S&quot; &quot;S&quot; ...</code></pre>
-<pre class="r"><code>names(titanic)</code></pre>
-<pre><code>##  [1] &quot;PassengerId&quot; &quot;Survived&quot;    &quot;Pclass&quot;      &quot;Name&quot;        &quot;Sex&quot;        
-##  [6] &quot;Age&quot;         &quot;SibSp&quot;       &quot;Parch&quot;       &quot;Ticket&quot;      &quot;Fare&quot;       
-## [11] &quot;Cabin&quot;       &quot;Embarked&quot;</code></pre>
-<pre class="r"><code>mean(titanic$Age, na.rm = TRUE)</code></pre>
-<pre><code>## [1] 29.69912</code></pre>
-<pre class="r"><code>min(titanic$Age, na.rm = TRUE)</code></pre>
-<pre><code>## [1] 0.42</code></pre>
-<pre class="r"><code>max(titanic$Age, na.rm = TRUE)</code></pre>
-<pre><code>## [1] 80</code></pre>
-<pre class="r"><code>table(titanic$Pclass)</code></pre>
-<pre><code>## 
-##   1   2   3 
-## 216 184 491</code></pre>
-<pre class="r"><code>colSums(is.na(titanic))</code></pre>
-<pre><code>## PassengerId    Survived      Pclass        Name         Sex         Age 
-##           0           0           0           0           0         177 
-##       SibSp       Parch      Ticket        Fare       Cabin    Embarked 
-##           0           0           0           0           0           0</code></pre>
-<pre class="r"><code>class(titanic$Survived)</code></pre>
-<pre><code>## [1] &quot;integer&quot;</code></pre>
-<pre class="r"><code>cor(titanic[, c(&quot;Age&quot;, &quot;Fare&quot;, &quot;SibSp&quot;, &quot;Parch&quot;)], use = &quot;complete.obs&quot;)</code></pre>
-<pre><code>##               Age       Fare      SibSp      Parch
-## Age    1.00000000 0.09606669 -0.3082468 -0.1891193
-## Fare   0.09606669 1.00000000  0.1383288  0.2051189
-## SibSp -0.30824676 0.13832879  1.0000000  0.3838199
-## Parch -0.18911926 0.20511888  0.3838199  1.0000000</code></pre>
-<pre class="r"><code>by(titanic$Age, titanic$Pclass, mean, na.rm = TRUE)</code></pre>
-<pre><code>## titanic$Pclass: 1
-## [1] 38.23344
-## ------------------------------------------------------------ 
-## titanic$Pclass: 2
-## [1] 29.87763
-## ------------------------------------------------------------ 
-## titanic$Pclass: 3
-## [1] 25.14062</code></pre>
-<pre class="r"><code>titanic$Adult &lt;- ifelse(titanic$Age &lt; 18, &quot;Child&quot;, &quot;Adult&quot;)</code></pre>
-<ol start="17" style="list-style-type: decimal">
-<li>In the dataset in #16, practice the follows. You can reuse the code
-of 16.</li>
-</ol>
+<p>It should look like this</p>
+<pre class="r"><code>rsconnect::setAccountInfo(name=&#39;fall20&#39;,
+              token=&#39;E130D64F22776383660DA7EA5251EC04&#39;,
+              secret=&#39;mJI7rgq2Wf46g2Wf46g2WNOa+E6NRqr26yG3N5&#39;)</code></pre>
 <ul>
-<li>Create a categorical variable from a continuous variable</li>
-<li>From one categorical variable, create a new categorical variable
-with fewer categories</li>
+<li><p>Paste the secret code into Rstudio Console and Run it.</p></li>
+<li><p>Download a sample shiny flex dashboard: <a href="https://sn904109.shinyapps.io/1_flex_select/">Dashboard</a>, <a href="https://bryantstats.github.io/math421/final/1_flex_select.Rmd">Rmd</a></p></li>
+<li><p>Click <code>Run Document</code> (Or Ctrl + Shift + K) to check
+the dashboard</p></li>
+<li><p>On right, top corner click Publish to Publish the dashboard to
+your acccount on shinyapps.io</p></li>
+<li><p>Your published dashboard should look like this</p>
+<p><a href="https://sn904109.shinyapps.io/1_flex_select/" class="uri">https://sn904109.shinyapps.io/1_flex_select/</a></p></li>
 </ul>
-<pre class="r"><code>titanic$AgeGroup &lt;- cut(titanic$Age,
-                        breaks = c(-Inf, 12, 18, 60, Inf),
-                        labels = c(&quot;Child&quot;, &quot;Teen&quot;, &quot;Adult&quot;, &quot;Senior&quot;))
-table(titanic$AgeGroup, useNA = &quot;ifany&quot;)</code></pre>
-<pre><code>## 
-##  Child   Teen  Adult Senior   &lt;NA&gt; 
-##     69     70    553     22    177</code></pre>
-<pre class="r"><code>titanic$ClassGroup &lt;- ifelse(titanic$Pclass == 1, &quot;High&quot;, &quot;Low&quot;)
-titanic$ClassGroup &lt;- factor(titanic$ClassGroup)
-table(titanic$ClassGroup)</code></pre>
-<pre><code>## 
-## High  Low 
-##  216  675</code></pre>
-<p>If you do not have a data, you can use <a href="https://www.kaggle.com/competitions/titanic/overview">the titanic
-dataset</a>, which can be downloaded at <a href="../data/titanic.csv">this link</a></p>
+<p>This is the <a href="FinalQ3.Rmd">link</a> to my dashboard I got an
+error that “subscript out of bounds”</p>
+</div>
+<div id="question-4---selectinput" class="section level3">
+<h3>Question 4 - selectInput</h3>
+<p>Write a shiny flex dashboard that uses <code>selectInput</code> and
+works with a dataset different from the titanic dataset.</p>
+<p><a href="https://sn904109.shinyapps.io/1_flex_select/">Similar
+dashboard</a>, <a href="1_flex_select.Rmd">Rmd</a></p>
+<p>Note: In the above dashboard, click to Source Code to show the
+codes.</p>
+<p>Include the link of your dashboard <a href="https://ajohnson32.shinyapps.io/FinalQ4/">here</a>. #had an issue
+using ggplot so I used plot_ly instead</p>
+</div>
+<div id="question-5---checkboxgroupinput" class="section level3">
+<h3>Question 5 - checkboxGroupInput</h3>
+<p>Write a shiny flex dashboard that uses
+<code>checkboxGroupInput</code> and works with a dataset different from
+the titanic dataset.</p>
+<p><a href="https://sn904109.shinyapps.io/2_flex_checkbox/">Similar
+dashboard</a>, <a href="2_flex_checkbox.Rmd">Rmd</a></p>
+<p>Include the link of your dashboard <a href="https://ajohnson32.shinyapps.io/FinalQ5/">here</a>. I had the same
+issue with ggplot as before</p>
+</div>
+<div id="question-6---sliderinput" class="section level3">
+<h3>Question 6 - sliderInput</h3>
+<p>Write a shiny flex dashboard that uses <code>sliderInput</code> and
+works with a dataset different from the titanic dataset.</p>
+<p><a href="https://sn904109.shinyapps.io/3_flex_slider/">Similar
+dashboard</a>, <a href="3_flex_slider.Rmd">Rmd</a></p>
+<p>Include the link of your dashboard <a href="https://ajohnson32.shinyapps.io/FinalQ6/">here</a>. I had the same
+issue with ggplot as before</p>
+</div>
+<div id="question-7---radiobuttons" class="section level3">
+<h3>Question 7 - radioButtons</h3>
+<p>Write a shiny flex dashboard that uses <code>radioButtons</code> and
+works with a dataset different from the titanic dataset.</p>
+<p><a href="https://sn904109.shinyapps.io/4_flex_radio/">Similar
+dashboard</a>, <a href="4_flex_radio.Rmd">Rmd</a></p>
+<p>Include the link of your dashboard <a href="https://ajohnson33.shinyapps.io/FinalQ7/">here</a>. Same issue
+with ggplot as before</p>
+<hr />
+<p><strong>Notice: You can only run maximum 5 apps on shinyapps.io. If
+you are running out of apps, you are recommended to create another shiny
+account and use multiple accounts.</strong></p>
+<hr />
+</div>
+<div id="question-8---daterangeinput" class="section level3">
+<h3>Question 8 - dateRangeInput</h3>
+<p>Write a shiny flex dashboard that uses <code>dateRangeInput</code>
+and works with a dataset different from the titanic dataset.</p>
+<p><a href="https://sn904109.shinyapps.io/5_flex_date_range/">Similar
+dashboard</a>, <a href="5_flex_date_range.Rmd">Rmd</a></p>
+<p>Include the link of your dashboard <a href="https://ajohnson33.shinyapps.io/FinalQ8/">here</a>.</p>
+</div>
+<div id="question-9---combination-of-inputs" class="section level3">
+<h3>Question 9 - Combination of Inputs</h3>
+<p>We can combine different input methods into one dashboard. Write a
+shiny flex dashboard and works with a dataset different from the titanic
+dataset. The dashboard should use at least three different input
+methods.</p>
+<p><a href="https://snguyen4.shinyapps.io/6_flex_combine/">Similar
+dashboard</a>, <a href="6_flex_combine.Rmd">Rmd</a></p>
+<p>Include the link of your dashboard <a href="https://ajohnson33.shinyapps.io/FinalQ9/">here</a>.</p>
+<hr />
+</div>
+<div id="question-10" class="section level3">
+<h3>Question 10</h3>
+<p>Write a dashboard that</p>
+<ul>
+<li><p>Works with a dataset that have not been used in class</p></li>
+<li><p>Has a social media click</p></li>
+<li><p>Has a source code click</p></li>
+<li><p>Has a side bar</p></li>
+<li><p>Has five input methods</p></li>
+<li><p>Has at least three main tabs</p></li>
+<li><p>Has columns tabs</p></li>
+<li><p>Has at least five meaningful plots</p></li>
+<li><p>Shows a table data that can be searched</p></li>
+<li><p>Has at least one text paragraph</p></li>
+<li><p>Includes at least one image</p></li>
+<li><p>(Extra Credits) Uses Reddit data or text data and text data
+visualization</p></li>
+</ul>
+<p>Include the link of your dashboard <a href="https://ajohnson33.shinyapps.io/FinalQ10/">here</a>.</p>
+<hr />
+</div>
+<div id="question-11---presentation" class="section level3">
+<h3>Question 11 - Presentation</h3>
+<p>Present your dashboard in Question 10 on the final exam day.</p>
+<ul>
+<li><p>Present the features of your dashboard</p></li>
+<li><p>Discuss how you organize the codes of the dashboard and the final
+project.</p></li>
+<li><p>Discuss any error or challenge you had to overcome</p></li>
+<li><p>Give an advice for anyone who is about to do this
+project</p></li>
+</ul>
+<hr />
+</div>
+<div id="references" class="section level3">
+<h3>References</h3>
+<p><a href="https://rstudio.github.io/flexdashboard/articles/examples.html" class="uri">https://rstudio.github.io/flexdashboard/articles/examples.html</a></p>
+<p><a href="https://bookdown.org/yihui/rmarkdown/dashboards.html" class="uri">https://bookdown.org/yihui/rmarkdown/dashboards.html</a></p>
+<p><a href="https://epirhandbook.com/en/dashboards-with-r-markdown.html" class="uri">https://epirhandbook.com/en/dashboards-with-r-markdown.html</a></p>
+<p>Check out Shiny official tutorial: <a href="https://shiny.rstudio.com/tutorial/" class="uri">https://shiny.rstudio.com/tutorial/</a></p>
+<p>Check out Shiny Galary: <a href="https://shiny.rstudio.com/gallery/" class="uri">https://shiny.rstudio.com/gallery/</a></p>
+<p>Pairs of render and output: <a href="https://bookdown.org/weicheng/shinyTutorial/images/outputs.png" class="uri">https://bookdown.org/weicheng/shinyTutorial/images/outputs.png</a></p>
+<p>Check out some shiny layouts here: <a href="https://shiny.rstudio.com/articles/layout-guide.html" class="uri">https://shiny.rstudio.com/articles/layout-guide.html</a></p>
+<p>Check out shiny dynamic UI here</p>
+<p><a href="https://shiny.rstudio.com/gallery/dynamic-ui.html" class="uri">https://shiny.rstudio.com/gallery/dynamic-ui.html</a></p>
+<p><a href="https://shiny.rstudio.com/articles/dynamic-ui.html" class="uri">https://shiny.rstudio.com/articles/dynamic-ui.html</a></p>
+<hr />
 </div>
 
 
