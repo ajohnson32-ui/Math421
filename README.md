@@ -23,7 +23,7 @@ This is my tenth assignment:  [Assignment 10](assignment10.html)
 
 This is my eleventh assignment: [Assignmnet 11](assignment11.html)
 
-This is my twelfth assignment: FIX THIS ONE [Assignment 12](assignment12.html)
+This is my twelfth assignment: [Assignment 12](assignment12.html)
 
 This is my midterm assignmnet: [Midterm](midterm_toc.html)
 
