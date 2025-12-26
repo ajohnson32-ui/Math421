@@ -34,14 +34,14 @@ knitr::opts_chunk$set(message = FALSE)
 
 1. Use `read_csv` to import the data.  Show the number of NAs for each columns.   
 ```{r}
-census <- read.csv("C:/Users/student/Downloads/adult_census_missing.csv")
+library(readr)
+census <- read_csv("adult_census_missing.csv")
 colSums(is.na(census))
 ```
 
 2. Using function `aggr` the VIM package to plot the number of NAs for each column. 
 ```{r}
 library(tidyverse)
-install.packages("VIM")
 library(VIM)
 aggr(
   census,

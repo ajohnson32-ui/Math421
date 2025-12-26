@@ -8,6 +8,12 @@ title: "Assignment 5 - Part 2"
 ---
 
 ***How to do it?***: 
+```{r}
+library(readxl)
+library(stringr)
+library(dplyr)
+library(tidyr)
+```
 
 - Open the Rmarkdown file of this assignment ([link](assignment5_part2.Rmd)) in Rstudio. 
 
