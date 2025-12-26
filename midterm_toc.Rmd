@@ -237,13 +237,14 @@ total_charge_by_provider <- hdd_2018_selected %>%
   group_by(provider) %>%
   summarise(
     total_charge = sum(tot),
-    n = n()
+    n = n(),
+    .groups = "drop"
   ) %>%
   arrange(desc(total_charge))
-
 total_charge_by_provider
 
-top_provider %>%
+top_provider <- total_charge_by_provider %>%
+  slice(1) %>%
   mutate(
     provider_name = case_when(
       provider == 7201 ~ "Newport",
@@ -263,8 +264,7 @@ top_provider %>%
       TRUE ~ "Other"
     )
   )
-top_provider <- total_charge_by_provider %>%
-  slice(1)
+
 top_provider
 ```
 
