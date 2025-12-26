@@ -25,11 +25,11 @@ This is my eleventh assignment: [Assignmnet 11](assignment11.html)
 
 This is my twelfth assignment: FIX THIS ONE [Assignment 12](assignment12.html)
 
-This is my midterm assignmnet: FIX THIS ONE [Midterm](midterm_toc.html)
+This is my midterm assignmnet: [Midterm](midterm_toc.html)
 
 This is my thirteenth assignment: [Assignment 13](assignment13_optional.html)
 
-This is my fourteenth assignment: FIX THIS ONE [Assignment 14](assignment14_optional.html)
+This is my fourteenth assignment: [Assignment 14](assignment14_optional.html)
 
 
 This is my final project: [Final](421final.html)
